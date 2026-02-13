@@ -6,9 +6,12 @@ const cors = require("cors");
 const { PDFDocument, StandardFonts, rgb } = require("pdf-lib");
 
 const app = express();
+
+app.use(express.json({ limit: "15mb" }));
+app.use(express.urlencoded({ limit: "15mb", extended: true }));
+
 const upload = multer();
 
-app.use(express.json({ limit: "10mb" }));
 
 // ================= ENV =================
 
