@@ -12,6 +12,49 @@ app.use(express.urlencoded({ limit: "15mb", extended: true }));
 
 const upload = multer();
 
+const { PDFDocument, StandardFonts } = require("pdf-lib");
+
+app.use(express.json({ limit: "10mb" }));
+
+app.post("/generate-pdf-editable", async (req, res) => {
+  try {
+
+    const data = req.body;
+
+    const pdfDoc = await PDFDocument.create();
+    const page = pdfDoc.addPage([595, 842]);
+    const font = await pdfDoc.embedFont(StandardFonts.Helvetica);
+
+    const form = pdfDoc.getForm();
+
+    function drawLabel(text, x, y){
+      page.drawText(text, { x, y, size: 10, font });
+    }
+
+    function drawField(name, x, y, w=200, h=18){
+      const field = form.createTextField(name);
+      field.addToPage(page, { x, y, width: w, height: h });
+    }
+
+    drawLabel("Taller:", 50, 800);
+    drawField("taller", 120, 795);
+
+    drawLabel("Serie:", 50, 770);
+    drawField("serieNumero", 120, 765);
+
+    drawLabel("Siniestro:", 50, 740);
+    drawField("siniestro", 120, 735);
+
+    const bytes = await pdfDoc.save();
+
+    res.setHeader("Content-Type", "application/pdf");
+    res.send(Buffer.from(bytes));
+
+  } catch(e){
+    console.error(e);
+    res.status(500).json({ error: e.message });
+  }
+});
 
 // ================= ENV =================
 
